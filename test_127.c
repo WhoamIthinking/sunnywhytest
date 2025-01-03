@@ -10,21 +10,6 @@ void printSubset(int *subset, int subsetSize) {
     printf("\n");
 }
 
-// 生成子集
-void generateSubsets(int *arr, int n, int *subset, int subsetSize, int index) {
-    if (index == n) {
-        printSubset(subset, subsetSize);
-        return;
-    }
-
-    // 不包含当前元素
-    generateSubsets(arr, n, subset, subsetSize, index + 1);
-
-    // 包含当前元素
-    subset[subsetSize] = arr[index];
-    generateSubsets(arr, n, subset, subsetSize + 1, index + 1);
-}
-
 // 比较函数，用于qsort排序
 int compare(const void *a, const void *b) {
     int *arrA = *(int **)a;
