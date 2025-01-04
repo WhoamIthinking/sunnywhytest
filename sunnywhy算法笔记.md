@@ -325,4 +325,405 @@ int main(){
 
 ==**使用first标记用于判断是不是第一个元素**==
 
-## 130——
+## 130——分解子集2
+
+是在上题基础上增加了自己定义各个集合中的元素，故而只需在原来的`a[i][j]`处由原来的1变为自己规定的数字即可，代码如下：
+
+```c
+#include<stdio.h>
+#include<stdlib.h>
+#include<math.h>
+
+int a[5000][12];
+void generate(int n,int b[]){
+    int i=0;
+    int j;
+    for(i=0;i<pow(2,n);i++){
+        for(j=0;j<n;j++){
+            if(i&(1<<j)){
+                a[i][j]=b[j];
+                //printf("%d\n",a[i][j]);
+            }
+        }
+    }
+}
+
+// 比较函数，用于qsort排序
+int compare(const void *p1, const void *p2) {
+    int *arrA = (int *)p1;
+    int *arrB = (int *)p2;
+    int sizeA = 0, sizeB = 0;
+
+    // 计算子集的大小
+    for (int i = 0; i < 12; i++) {
+        if (arrA[i] !=0) sizeA++;
+        if (arrB[i] !=0) sizeB++;
+    }
+
+    // 按子集大小排序
+    if (sizeA != sizeB) return sizeA - sizeB;
+
+    // 如果大小相同，按字典序排序
+    for (int i = 0; i < 12; i++) {
+        if (arrA[i] != arrB[i]) return arrB[i] - arrA[i];
+    }
+
+    return 0;
+}
+
+// 排序函数
+void mysort(int n) {
+    qsort(a, (int)pow(2, n), sizeof(a[0]), compare);
+}
+
+int main(){
+    int n;
+    scanf("%d",&n);
+    int i=0,j=0;
+    for(i=0;i<pow(2,n);i++){
+        for(j=0;j<n;j++){
+            a[i][j]=0;
+        }
+    }
+    int *b=(int *)malloc(sizeof(int)*n);
+    for(j=0;j<n;j++){
+        scanf("%d",&b[j]);
+    }
+    generate(n,b);
+    mysort(n);
+    for(i=0;i<pow(2,n);i++){
+        int first = 1; // 标记是否是第一个元素
+        for(j=0;j<n;j++){
+            if(a[i][j]!=0){
+                if (!first) {
+                    printf(" ");
+                }
+                printf("%d", a[i][j]);
+                first = 0;
+            }
+        }
+        printf("\n");
+    }
+    return 0;
+}
+```
+
+## 131——子集3
+
+主要还是在子集二的基础上，只是再次升级，当输入的元素有重复时可以去重，但是不知道为什么在网上与我本地跑的不一样
+
+```C
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+
+int a[5000][12];
+
+// 生成子集
+void generate(int n, int b[]) {
+    int i = 0;
+    int j;
+    for (i = 0; i < pow(2, n); i++) {
+        for (j = 0; j < n; j++) {
+            if (i & (1 << j)) {
+                a[i][j] = b[j];
+            } else {
+                a[i][j] = 0; // 确保未选中的元素为0
+            }
+        }
+    }
+}
+
+// 比较函数，用于qsort排序
+int compare(const void *p1, const void *p2) {
+    int *arrA = (int *)p1;
+    int *arrB = (int *)p2;
+    int sizeA = 0, sizeB = 0;
+
+    // 计算子集的大小
+    for (int i = 0; i < 12; i++) {
+        if (arrA[i] != 0) sizeA++;
+        if (arrB[i] != 0) sizeB++;
+    }
+
+    // 按子集大小排序
+    if (sizeA != sizeB) return sizeA - sizeB;
+
+    // 如果大小相同，按字典序排序
+    for (int i = 0; i < 12; i++) {
+        if (arrA[i] != arrB[i]) return arrB[i] - arrA[i];
+    }
+
+    return 0;
+}
+
+// 排序函数
+void mysort(int n) {
+    qsort(a, (int)pow(2, n), sizeof(a[0]), compare);
+}
+
+int main() {
+    int n;
+    scanf("%d", &n);
+    int i = 0, j = 0;
+
+    // 初始化数组a
+    for (i = 0; i < pow(2, n); i++) {
+        for (j = 0; j < n; j++) {
+            a[i][j] = 0;
+        }
+    }
+
+    // 读取输入的n个整数
+    int *b = (int *)malloc(sizeof(int) * n);
+    for (j = 0; j < n; j++) {
+        scanf("%d", &b[j]);
+    }
+
+    // 生成子集
+    generate(n, b);
+    // 排序子集
+    mysort(n);
+
+    // 打印不重复的子集
+    int *last = NULL;
+    for (i = 0; i < pow(2, n); i++) {
+        int *c=(int *)malloc(sizeof(int)*n);
+        for(j=0;j<n;j++){
+            c[j]=0;
+        }
+        int k=0;
+        int first = 1; // 标记是否是第一个元素
+        for (j = 0; j < n; j++) {
+            if (a[i][j] != 0) {
+                c[k]=a[i][j];
+                k++;
+            }
+        }
+        if(last!=NULL&&compare(c,last)==0){
+            last=c;
+            continue;
+        }
+        for(j=0;j<k;j++){
+            if(j==0){
+                printf("%d",c[j]);
+            }
+            else{
+                printf(" %d",c[j]);
+            }
+        }
+        free(last);
+        last = c;
+        printf("\n");
+    }
+
+    free(b);
+    return 0;
+}
+
+```
+
+## 132——全排列1
+
+对于分解子集来说可以使用01串来取巧，但是对于全排列，只能使用递归来算，其代码如下：
+
+```c
+#include <stdio.h>
+#include <stdlib.h>
+int a[45000][8];
+int k=0;
+// 迭代计算阶乘的函数
+unsigned long long factorial(int n) {
+    unsigned long long result = 1;
+    for (int i = 1; i <= n; i++) {
+        result *= i;
+    }
+    return result;
+}
+
+void swap(int *a,int *b){
+    int temp=*a;
+    *a=*b;
+    *b=temp;
+}
+int compare(const void *p1,const void *p2){
+    int *arra=(int*)p1;
+    int* arrb=(int*)p2;
+    int anum=0,bnum=0;
+    for(int i=0;i<8;i++){
+        if(arra[i]!=0) anum++;
+        if(arrb[i]!=0) bnum++;
+    }
+    if(anum!=bnum) return anum-bnum;
+    for(int i=0;i<8;i++){
+        if(arra[i]!=arrb[i]) return arra[i]-arrb[i];
+    }
+    return 0;
+}
+
+void mysort(int n){
+    qsort(a,(int)factorial(n),sizeof(a[0]),compare);
+}
+
+void printmute(int n){
+    for(int i=0;i<(int)factorial(n);i++){
+        for(int j=0;j<n;j++){
+            if(j>0) printf(" ");
+            printf("%d",a[i][j]);
+        }
+        printf("\n");
+    }
+}
+
+void permute(int* arr,int start,int end){
+    if(start==end){
+        for(int i=0;i<=end;i++){
+            a[k][i]=arr[i];
+        }
+        k++;
+    }
+    else{
+        for(int i=start;i<=end;i++){
+            swap(&arr[start],&arr[i]);
+            permute(arr,start+1,end);
+            swap(&arr[start],&arr[i]);
+        }
+    }
+}
+int main(){
+    int n;
+    scanf("%d",&n);
+    int *arr=(int*)malloc(sizeof(int)*n);
+    for(int i=0;i<(int)factorial(n);i++){
+        for(int j=0;j<n;j++){
+            a[i][j]=0;
+        }
+    }
+    for(int i=0;i<n;i++){
+        arr[i]=i+1;
+    }
+    permute(arr,0,n-1);
+    mysort(n);
+    printmute(n);
+    return 0;
+}
+```
+
+在此代码中最为关键的就是permute计算全排列，其中关于此代码的具体解释如下：
+
+### 函数定义
+```c
+void permute(int *arr, int start, int end) {
+```
+这个函数用于生成数组 `arr` 的全排列。`start` 和 `end` 分别表示当前排列的起始和结束索引。
+
+### 基本情况
+```c
+if (start == end) {
+    // 打印当前排列
+    for (int i = 0; i <= end; i++) {
+        printf("%d ", arr[i]);
+    }
+    printf("\n");
+}
+```
+当 `start` 等于 `end` 时，表示已经生成了一个完整的排列，此时打印当前排列。
+
+### 递归生成排列
+```c
+else {
+    for (int i = start; i <= end; i++) {
+        // 交换元素
+        swap(&arr[start], &arr[i]);
+        // 递归生成剩余元素的排列
+        permute(arr, start + 1, end);
+        // 还原交换
+        swap(&arr[start], &arr[i]);
+    }
+}
+```
+否则，通过交换 `start` 和 `i` 位置的元素，递归生成剩余元素的排列，然后还原交换。
+
+### 详细解释和举例
+
+假设我们有一个数组 `arr = {1, 2, 3}`，我们调用 `permute(arr, 0, 2)` 来生成其全排列。
+
+1. **初始调用**：
+   ```c
+   permute(arr, 0, 2);
+   ```
+   `start = 0`，`end = 2`，进入 `else` 分支。
+
+2. **第一次循环**：
+   ```c
+   for (int i = 0; i <= 2; i++) {
+       swap(&arr[0], &arr[i]);
+       permute(arr, 1, 2);
+       swap(&arr[0], &arr[i]);
+   }
+   ```
+   - 当 `i = 0` 时，`swap(&arr[0], &arr[0])` 不改变数组，递归调用 `permute(arr, 1, 2)`。
+
+3. **递归调用**：
+   ```c
+   permute(arr, 1, 2);
+   ```
+   `start = 1`，`end = 2`，进入 `else` 分支。
+
+4. **第二次循环**：
+   ```c
+   for (int i = 1; i <= 2; i++) {
+       swap(&arr[1], &arr[i]);
+       permute(arr, 2, 2);
+       swap(&arr[1], &arr[i]);
+   }
+   ```
+   - 当 `i = 1` 时，`swap(&arr[1], &arr[1])` 不改变数组，递归调用 `permute(arr, 2, 2)`。
+
+5. **打印排列**：
+   ```c
+   permute(arr, 2, 2);
+   ```
+   `start = 2`，`end = 2`，进入 `if` 分支，打印当前排列 `1 2 3`。
+
+6. **还原交换**：
+   ```c
+   swap(&arr[1], &arr[1]);
+   ```
+   还原交换，不改变数组。
+
+7. **继续循环**：
+   - 当 `i = 2` 时，`swap(&arr[1], &arr[2])` 交换元素，数组变为 `1 3 2`，递归调用 `permute(arr, 2, 2)`。
+
+8. **打印排列**：
+   ```c
+   permute(arr, 2, 2);
+   ```
+   `start = 2`，`end = 2`，进入 `if` 分支，打印当前排列 `1 3 2`。
+
+9. **还原交换**：
+   ```c
+   swap(&arr[1], &arr[2]);
+   ```
+   还原交换，数组变回 `1 2 3`。
+
+10. **继续外层循环**：
+    - 当 `i = 1` 时，`swap(&arr[0], &arr[1])` 交换元素，数组变为 `2 1 3`，递归调用 `permute(arr, 1, 2)`。
+
+11. **重复上述步骤**：
+    继续递归调用和交换，生成并打印所有排列。
+
+### 总结
+通过递归和交换，`permute` 函数生成了数组的所有排列。每次递归调用处理一个元素的位置，通过交换和还原交换，确保生成所有可能的排列组合。
+
+而对于其中需要注意的点还有就是swap函数：
+
+```c
+void swap(int *a,int *b){
+    int temp=*a;
+    *a=*b;
+    *b=temp;
+}
+```
+
+用于交换指针的地址而非指针
