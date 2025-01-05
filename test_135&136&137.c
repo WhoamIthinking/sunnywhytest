@@ -63,17 +63,22 @@ int main(){
     }
     int *arr=(int *)malloc(sizeof(int)*n);
     for(int i=0;i<n;i++){
-        arr[i]=i+1;
+        scanf("%d",&arr[i]);
     }
     int *combo=(int *)malloc(sizeof(int)*m);
     generate_combination(arr,n,m,0,combo,0,m);
     mysort(n,m);
     for(int i=0;i<combination(n,m);i++){
-        for(int j=0;j<m;j++){
-            if(j>0) printf(" ");
-            printf("%d",result[i][j]);
+        if(i!=0&&compare(result[i-1],result[i])==0){
+            continue;
         }
-        printf("\n");
+        else{
+            for(int j=0;j<m;j++){
+                if(j>0) printf(" ");
+                printf("%d",result[i][j]);
+            }
+            printf("\n");
+        }
     }
 
 }
