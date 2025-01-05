@@ -716,6 +716,10 @@ else {
 ### 总结
 通过递归和交换，`permute` 函数生成了数组的所有排列。每次递归调用处理一个元素的位置，通过交换和还原交换，确保生成所有可能的排列组合。
 
+
+
+### 对于swap函数的详细解释
+
 而对于其中需要注意的点还有就是swap函数：
 
 ```c
@@ -726,4 +730,756 @@ void swap(int *a,int *b){
 }
 ```
 
-用于交换指针的地址而非指针
+用于交换指针的地址而非指针，这是因为在 C 语言中，函数参数是按值传递的，这意味着当你将变量传递给函数时，函数接收到的是这些变量的副本，而不是变量本身。因此，如果你直接传递 `x` 和 `y`，`swap` 函数只能交换它们的副本，而不会影响原始变量的值。
+
+为了让 `swap` 函数能够交换原始变量的值，我们需要传递变量的地址（即指针）。通过传递指针，`swap` 函数可以直接访问和修改原始变量的值。
+
+#### 按值传递
+
+如果你直接传递 `x` 和 `y`，函数接收到的是它们的副本：
+
+```c
+void swap(int a, int b) {
+    int temp = a;
+    a = b;
+    b = temp;
+}
+
+int main() {
+    int x = 5;
+    int y = 10;
+    swap(x, y);
+    // x 和 y 的值不会改变
+    return 0;
+}
+```
+
+在这种情况下，`swap` 函数只能交换 `a` 和 `b` 的值，而不会影响 `x` 和 `y` 的值。
+
+#### 传递指针
+
+通过传递指针，`swap` 函数可以直接访问和修改原始变量的值：
+
+```c
+void swap(int *a, int *b) {
+    int temp = *a;
+    *a = *b;
+    *b = temp;
+}
+
+int main() {
+    int x = 5;
+    int y = 10;
+    swap(&x, &y);
+    // x 和 y 的值将被交换
+    return 0;
+}
+```
+
+在这种情况下，`swap` 函数接收到的是 `x` 和 `y` 的地址（即指针），通过解引用指针（`*a` 和 `*b`），`swap` 函数可以直接访问和修改 `x` 和 `y` 的值。
+
+## 133&134——全排列2,3
+
+全排列二就是类似于之前的寻找子集2，在原来的基础上增加了自行输入数字，而全排列3就是又在2的基础上增加了去除重复数字的功能，由于在之前的全排列1我就做了模块化的冗余，因此修改较为简单，最后的代码如下：
+
+```c
+#include <stdio.h>
+#include <stdlib.h>
+int a[45000][8];
+int k=0;
+// 迭代计算阶乘的函数
+unsigned long long factorial(int n) {
+    unsigned long long result = 1;
+    for (int i = 1; i <= n; i++) {
+        result *= i;
+    }
+    return result;
+}
+
+void swap(int *a,int *b){
+    int temp=*a;
+    *a=*b;
+    *b=temp;
+}
+int compare(const void *p1,const void *p2){
+    int *arra=(int*)p1;
+    int* arrb=(int*)p2;
+    int anum=0,bnum=0;
+    for(int i=0;i<8;i++){
+        if(arra[i]!=0) anum++;
+        if(arrb[i]!=0) bnum++;
+    }
+    if(anum!=bnum) return anum-bnum;
+    for(int i=0;i<8;i++){
+        if(arra[i]!=arrb[i]) return arra[i]-arrb[i];
+    }
+    return 0;
+}
+
+void mysort(int n){
+    qsort(a,(int)factorial(n),sizeof(a[0]),compare);
+}
+
+void printmute(int n){
+    for(int i=0;i<(int)factorial(n);i++){
+        if(i!=0&&compare(a[i-1],a[i])==0){
+            continue;
+        }
+        else{
+            for(int j=0;j<n;j++){
+                if(j>0) printf(" ");
+                printf("%d",a[i][j]);
+            }
+            printf("\n");
+        }
+    }
+}
+
+void permute(int* arr,int start,int end){
+    if(start==end){
+        for(int i=0;i<=end;i++){
+            a[k][i]=arr[i];
+        }
+        k++;
+    }
+    else{
+        for(int i=start;i<=end;i++){
+            swap(&arr[start],&arr[i]);
+            permute(arr,start+1,end);
+            swap(&arr[start],&arr[i]);
+        }
+    }
+}
+int main(){
+    int n;
+    scanf("%d",&n);
+    int *arr=(int*)malloc(sizeof(int)*n);
+    for(int i=0;i<(int)factorial(n);i++){
+        for(int j=0;j<n;j++){
+            a[i][j]=0;
+        }
+    }
+    for(int i=0;i<n;i++){
+        scanf("%d",&arr[i]);
+    }
+    permute(arr,0,n-1);
+    mysort(n);
+    printmute(n);
+    return 0;
+}
+```
+
+## 135&136&137——组合
+
+对于组合，同样有三组操作，此处直接合到一起以最终版来论述：
+
+```c
+#include<stdio.h>
+#include<stdlib.h>
+
+int result[3000][12];
+int k;
+// 阶乘函数
+long long factorial(int num) {
+    long long result = 1;
+    for (int i = 2; i <= num; i++) {
+        result *= i;
+    }
+    return result;
+}
+// 组合数函数
+long long combination(int n, int m) {
+    if (m > n) return 0; // 当 m > n 时，组合数为 0
+    return factorial(n) / (factorial(m) * factorial(n - m));
+}
+
+int compare(const void *p1,const void *p2){
+    int *arra=(int*)p1;
+    int* arrb=(int*)p2;
+    int anum=0,bnum=0;
+    for(int i=0;i<8;i++){
+        if(arra[i]!=0) anum++;
+        if(arrb[i]!=0) bnum++;
+    }
+    if(anum!=bnum) return anum-bnum;
+    for(int i=0;i<8;i++){
+        if(arra[i]!=arrb[i]) return arra[i]-arrb[i];
+    }
+    return 0;
+}
+
+void mysort(int n,int m){
+    qsort(result,(int)combination(n,m),sizeof(result[0]),compare);
+}
+
+void generate_combination(int *arr,int n,int m,int index,int *combo,int i,int d){
+    if(index==d){
+        for(int i=0;i<index;i++){
+            result[k][i]=combo[i];
+            //printf("$$$%d$$$ &&&&%d&&&&\n",k,i);
+        }
+        k++;
+    }
+    else{   
+            //printf("combo:$$$%d$$$ &&&&%d&&&&\n",combo[index],index);
+            if(n-i<m-index) return;
+            combo[index]=arr[i];
+            generate_combination(arr,n-1,m-1,index+1,combo,i+1,d);
+            generate_combination(arr,n,m,index,combo,i+1,d);
+    }
+}
+int main(){
+    int n,m;
+    scanf("%d %d",&n,&m);
+    int i=0,j=0;
+    for(int i=0;i<(int)combination(n,m);i++){
+        for(int j=0;j<m;j++){
+            result[i][j]=0;
+        }
+    }
+    int *arr=(int *)malloc(sizeof(int)*n);
+    for(int i=0;i<n;i++){
+        scanf("%d",&arr[i]);
+    }
+    int *combo=(int *)malloc(sizeof(int)*m);
+    generate_combination(arr,n,m,0,combo,0,m);
+    mysort(n,m);
+    for(int i=0;i<combination(n,m);i++){
+        if(i!=0&&compare(result[i-1],result[i])==0){
+            continue;
+        }
+        else{
+            for(int j=0;j<m;j++){
+                if(j>0) printf(" ");
+                printf("%d",result[i][j]);
+            }
+            printf("\n");
+        }
+    }
+
+}
+```
+
+这个代码的核心思想是生成并排序组合数。具体来说，它生成一个数组的所有可能的组合，并按特定顺序对这些组合进行排序。以下是详细解释：
+
+### 核心思想
+
+1. **生成组合**：使用递归方法生成一个数组的所有可能的组合。
+2. **排序组合**：使用 `qsort` 函数对生成的组合进行排序。
+3. **去重并输出**：去除重复的组合，并按要求输出。
+
+### 关键函数
+
+#### 1. 阶乘函数 `factorial`
+
+```c
+long long factorial(int num) {
+    long long result = 1;
+    for (int i = 2; i <= num; i++) {
+        result *= i;
+    }
+    return result;
+}
+```
+
+这个函数计算并返回一个整数的阶乘。
+
+#### 2. 组合数函数 `combination`
+
+```c
+long long combination(int n, int m) {
+    if (m > n) return 0; // 当 m > n 时，组合数为 0
+    return factorial(n) / (factorial(m) * factorial(n - m));
+}
+```
+
+这个函数计算并返回组合数 `C(n, m)`，即从 `n` 个元素中选取 `m` 个元素的组合数。
+
+#### 3. 比较函数 `compare`
+
+```c
+int compare(const void *p1, const void *p2) {
+    int *arra = (int *)p1;
+    int *arrb = (int *)p2;
+    int anum = 0, bnum = 0;
+    for (int i = 0; i < 8; i++) {
+        if (arra[i] != 0) anum++;
+        if (arrb[i] != 0) bnum++;
+    }
+    if (anum != bnum) return anum - bnum;
+    for (int i = 0; i < 8; i++) {
+        if (arra[i] != arrb[i]) return arra[i] - arrb[i];
+    }
+    return 0;
+}
+```
+
+这个函数用于 `qsort` 函数的比较器，按照组合的大小和字典序排序。
+
+#### 4. 排序函数 `mysort`
+
+```c
+void mysort(int n, int m) {
+    qsort(result, (int)combination(n, m), sizeof(result[0]), compare);
+}
+```
+
+这个函数使用 `qsort` 对生成的组合进行排序。
+
+#### 5. 生成组合的递归函数 `generate_combination`
+
+```c
+void generate_combination(int *arr, int n, int m, int index, int *combo, int i, int d) {
+    if (index == d) {
+        for (int i = 0; i < index; i++) {
+            result[k][i] = combo[i];
+        }
+        k++;
+    } else {
+        if (n - i < m - index) return;
+        combo[index] = arr[i];
+        generate_combination(arr, n - 1, m - 1, index + 1, combo, i + 1, d);
+        generate_combination(arr, n, m, index, combo, i + 1, d);
+    }
+}
+```
+
+这个函数递归地生成数组 `arr` 的所有可能的组合，并将每个组合存储在 `result` 中。生成组合的递归函数核心思想是通过递归的方法生成所有可能的组合。我们可以通过一个具体的例子来详细说明这个函数的工作原理。
+
+##### 参数说明
+
+- `arr`：原始数组。
+- `n`：数组的长度。
+- `m`：组合的长度。
+- `index`：当前组合的索引。
+- `combo`：当前组合。
+- `i`：当前处理到的数组索引。
+- `d`：组合的目标长度。
+
+##### 递归思想
+
+1. **基本情况**：
+   - 如果当前组合的长度 `index` 等于目标长度 `d`，则将当前组合存储到结果数组 `result` 中，并递增组合计数器 `k`。
+
+2. **递归情况**：
+   - 如果剩余元素不足以填满组合，则返回。
+   - 将当前元素添加到组合中，并递归生成剩余元素的组合。
+   - 不将当前元素添加到组合中，递归生成剩余元素的组合。
+
+##### 例子说明
+
+假设我们有一个数组 `arr = {1, 2, 3, 4}`，我们希望生成所有长度为 `2` 的组合。
+
+###### 初始调用
+
+```c
+generate_combination(arr, 4, 2, 0, combo, 0, 2);
+```
+
+###### 递归过程
+
+1. **第一次递归**：
+   - `index = 0`，`i = 0`，`combo = {}`。
+   - 将 `arr[0]` 添加到组合中，`combo = {1}`。
+   - 递归调用 `generate_combination(arr, 3, 1, 1, combo, 1, 2)`。
+
+2. **第二次递归**：
+   - `index = 1`，`i = 1`，`combo = {1}`。
+   - 将 `arr[1]` 添加到组合中，`combo = {1, 2}`。
+   - 递归调用 `generate_combination(arr, 2, 0, 2, combo, 2, 2)`。
+
+3. **基本情况**：
+   - `index = 2`，`d = 2`，将 `combo = {1, 2}` 存储到 `result` 中。
+
+4. **回溯**：
+   - 回溯到 `index = 1`，`i = 1`，`combo = {1}`。
+   - 不将 `arr[1]` 添加到组合中，递归调用 `generate_combination(arr, 3, 1, 1, combo, 2, 2)`。
+
+5. **第三次递归**：
+   - `index = 1`，`i = 2`，`combo = {1}`。
+   - 将 `arr[2]` 添加到组合中，`combo = {1, 3}`。
+   - 递归调用 `generate_combination(arr, 2, 0, 2, combo, 3, 2)`。
+
+6. **基本情况**：
+   - `index = 2`，`d = 2`，将 `combo = {1, 3}` 存储到 `result` 中。
+
+7. **回溯**：
+   - 回溯到 `index = 1`，`i = 2`，`combo = {1}`。
+   - 不将 `arr[2]` 添加到组合中，递归调用 `generate_combination(arr, 3, 1, 1, combo, 3, 2)`。
+
+8. **第四次递归**：
+   - `index = 1`，`i = 3`，`combo = {1}`。
+   - 将 `arr[3]` 添加到组合中，`combo = {1, 4}`。
+   - 递归调用 `generate_combination(arr, 2, 0, 2, combo, 4, 2)`。
+
+9. **基本情况**：
+   - `index = 2`，`d = 2`，将 `combo = {1, 4}` 存储到 `result` 中。
+
+10. **回溯**：
+    - 回溯到 `index = 0`，`i = 0`，`combo = {}`。
+    - 不将 `arr[0]` 添加到组合中，递归调用 `generate_combination(arr, 4, 2, 0, combo, 1, 2)`。
+
+11. **第五次递归**：
+    - `index = 0`，`i = 1`，`combo = {}`。
+    - 将 `arr[1]` 添加到组合中，`combo = {2}`。
+    - 递归调用 `generate_combination(arr, 3, 1, 1, combo, 2, 2)`。
+
+12. **第六次递归**：
+    - `index = 1`，`i = 2`，`combo = {2}`。
+    - 将 `arr[2]` 添加到组合中，`combo = {2, 3}`。
+    - 递归调用 `generate_combination(arr, 2, 0, 2, combo, 3, 2)`。
+
+13. **基本情况**：
+    - `index = 2`，`d = 2`，将 `combo = {2, 3}` 存储到 `result` 中。
+
+14. **回溯**：
+    - 回溯到 `index = 1`，`i = 2`，`combo = {2}`。
+    - 不将 `arr[2]` 添加到组合中，递归调用 `generate_combination(arr, 3, 1, 1, combo, 3, 2)`。
+
+15. **第七次递归**：
+    - `index = 1`，`i = 3`，`combo = {2}`。
+    - 将 `arr[3]` 添加到组合中，`combo = {2, 4}`。
+    - 递归调用 `generate_combination(arr, 2, 0, 2, combo, 4, 2)`。
+
+16. **基本情况**：
+    - `index = 2`，`d = 2`，将 `combo = {2, 4}` 存储到 `result` 中。
+
+17. **回溯**：
+    - 回溯到 `index = 0`，`i = 1`，`combo = {}`。
+    - 不将 `arr[1]` 添加到组合中，递归调用 `generate_combination(arr, 4, 2, 0, combo, 2, 2)`。
+
+18. **第八次递归**：
+    - `index = 0`，`i = 2`，`combo = {}`。
+    - 将 `arr[2]` 添加到组合中，`combo = {3}`。
+    - 递归调用 `generate_combination(arr, 3, 1, 1, combo, 3, 2)`。
+
+19. **第九次递归**：
+    - `index = 1`，`i = 3`，`combo = {3}`。
+    - 将 `arr[3]` 添加到组合中，`combo = {3, 4}`。
+    - 递归调用 `generate_combination(arr, 2, 0, 2, combo, 4, 2)`。
+
+20. **基本情况**：
+    - `index = 2`，`d = 2`，将 `combo = {3, 4}` 存储到 `result` 中。
+
+21. **回溯**：
+    - 回溯到 `index = 0`，`i = 2`，`combo = {}`。
+    - 不将 `arr[2]` 添加到组合中，递归调用 `generate_combination(arr, 4, 2, 0, combo, 3, 2)`。
+
+22. **第十次递归**：
+    - `index = 0`，`i = 3`，`combo = {}`。
+    - 将 `arr[3]` 添加到组合中，`combo = {4}`。
+    - 递归调用 `generate_combination(arr, 3, 1, 1, combo, 4, 2)`。
+
+23. **基本情况**：
+    - `index = 1`，`d = 2`，将 `combo = {4}` 存储到 `result` 中。
+
+通过递归调用和回溯，`generate_combination` 函数生成了所有可能的组合，并将它们存储在 `result` 数组中。希望这个详细解释和例子能帮助你理解这个递归函数的工作原理。如果有任何问题，请随时提问。
+
+### 主函数 `main`
+
+```c
+int main() {
+    int n, m;
+    scanf("%d %d", &n, &m);
+    int i = 0, j = 0;
+    for (int i = 0; i < (int)combination(n, m); i++) {
+        for (int j = 0; j < m; j++) {
+            result[i][j] = 0;
+        }
+    }
+    int *arr = (int *)malloc(sizeof(int) * n);
+    for (int i = 0; i < n; i++) {
+        scanf("%d", &arr[i]);
+    }
+    int *combo = (int *)malloc(sizeof(int) * m);
+    generate_combination(arr, n, m, 0, combo, 0, m);
+    mysort(n, m);
+    for (int i = 0; i < combination(n, m); i++) {
+        if (i != 0 && compare(result[i - 1], result[i]) == 0) {
+            continue;
+        } else {
+            for (int j = 0; j < m; j++) {
+                if (j > 0) printf(" ");
+                printf("%d", result[i][j]);
+            }
+            printf("\n");
+        }
+    }
+    free(arr);
+    free(combo);
+    return 0;
+}
+```
+
+### 代码解释
+
+1. **读取输入**：
+   ```c
+   scanf("%d %d", &n, &m);
+   ```
+   读取两个整数 `n` 和 `m`，表示从 `n` 个元素中选取 `m` 个元素的组合。
+
+2. **初始化结果数组**：
+   ```c
+   for (int i = 0; i < (int)combination(n, m); i++) {
+       for (int j = 0; j < m; j++) {
+           result[i][j] = 0;
+       }
+   }
+   ```
+   初始化结果数组 `result`。
+
+3. **读取数组元素**：
+   ```c
+   int *arr = (int *)malloc(sizeof(int) * n);
+   for (int i = 0; i < n; i++) {
+       scanf("%d", &arr[i]);
+   }
+   ```
+   动态分配数组 `arr` 并读取 `n` 个元素。
+
+4. **生成组合**：
+   ```c
+   int *combo = (int *)malloc(sizeof(int) * m);
+   generate_combination(arr, n, m, 0, combo, 0, m);
+   ```
+   动态分配数组 `combo` 并调用 `generate_combination` 函数生成组合。
+
+5. **排序组合**：
+   ```c
+   mysort(n, m);
+   ```
+   调用 `mysort` 函数对组合进行排序。
+
+6. **去重并输出**：
+   ```c
+   for (int i = 0; i < combination(n, m); i++) {
+       if (i != 0 && compare(result[i - 1], result[i]) == 0) {
+           continue;
+       } else {
+           for (int j = 0; j < m; j++) {
+               if (j > 0) printf(" ");
+               printf("%d", result[i][j]);
+           }
+           printf("\n");
+       }
+   }
+   ```
+   去除重复的组合，并按要求输出。
+
+### 示例
+
+假设输入：
+```
+4 2
+1 2 3 4
+```
+
+输出将是：
+```
+1 2
+1 3
+1 4
+2 3
+2 4
+3 4
+```
+
+这个代码生成并排序了从 `4` 个元素中选取 `2` 个元素的所有组合，并按要求输出。
+
+## 139——游园会
+
+此题实际上就是在原来子集题的基础上计算和值罢了，很简单，其代码如下：
+
+```c
+#include<stdio.h>
+#include<stdlib.h>
+#include<math.h>
+
+int a[5000][12];
+int nunum;
+void generate(int n,int b[]){
+    int i=0;
+    int j;
+    for(i=0;i<pow(2,n);i++){
+        for(j=0;j<n;j++){
+            if(i&(1<<j)){
+                a[i][j]=b[j];
+                //printf("%d\n",a[i][j]);
+            }
+        }
+    }
+}
+
+// 比较函数，用于qsort排序
+int compare(const void *p1, const void *p2) {
+    int *arrA = (int *)p1;
+    int *arrB = (int *)p2;
+    int sizeA = 0, sizeB = 0;
+
+    // 计算子集的大小
+    for (int i = 0; i < 12 ; i++) {
+        if (arrA[i] !=0) sizeA++;
+        if (arrB[i] !=0) sizeB++;
+    }
+
+    // 按子集大小排序
+    if (sizeA != sizeB) return sizeA - sizeB;
+
+    // 如果大小相同，按字典序排序
+    for (int i = 0; i < 12; i++) {
+        if (arrA[i] != arrB[i]) return arrB[i] - arrA[i];
+    }
+
+    return 0;
+}
+
+int compare1(const void *a, const void *b) {
+    return (*(int *)a - *(int *)b);
+}
+// 排序函数
+void mysort(int n) {
+    qsort(a, (int)pow(2, n), sizeof(a[0]), compare);
+}
+
+int main(){
+    int n;
+    scanf("%d",&n);
+    int i=0,j=0;
+    for(i=0;i<pow(2,n);i++){
+        for(j=0;j<n;j++){
+            a[i][j]=0;
+        }
+    }
+    int *b=(int *)malloc(sizeof(int)*n);
+    for(j=0;j<n;j++){
+        scanf("%d",&b[j]);
+    }
+    generate(n,b);
+    mysort(n);
+    int *sum=(int*)malloc(sizeof(int)*pow(2,n));
+    int last;
+    for(int i=0;i<pow(2,n);i++){
+        sum[i]=0;
+    }
+    for(i=0;i<pow(2,n);i++){
+        //int first = 1; // 标记是否是第一个元素
+        for(j=0;j<n;j++){
+            if(a[i][j]!=0){
+                //if (!first) {
+                    //printf(" ");
+                //}
+                //printf("%d", a[i][j]);
+                //first = 0;
+                sum[i]=sum[i]+a[i][j];
+            }
+        }
+    }
+    nunum=n;
+    qsort(sum,(int)pow(2,n),sizeof(int),compare1);
+    for(int i=0;i<pow(2,n);i++){
+        if(i!=0&&(sum[i-1]==sum[i])){
+            continue;
+        }
+        if(i>0) printf(" ");
+        printf("%d",sum[i]);
+    }
+    return 0;
+}
+```
+
+对于此题关键在于对于qsort函数的应用：
+
+`qsort` 是 C 标准库中的一个函数，用于对数组进行快速排序。它的定义在 `<stdlib.h>` 头文件中。`qsort` 函数的原型如下：
+
+```c
+void qsort(void *base, size_t num, size_t size, int (*compar)(const void *, const void *));
+```
+
+### 参数说明
+- `base`：指向要排序的数组的指针。
+- `num`：数组中元素的个数。
+- `size`：每个元素的大小（以字节为单位）。
+- `compar`：指向比较函数的指针，该函数用于确定两个元素的相对顺序。
+
+### 比较函数
+比较函数的原型如下：
+
+```c
+int compar(const void *a, const void *b);
+```
+
+- `a` 和 `b`：指向要比较的两个元素的指针。
+- 返回值：
+  - 小于 0：表示 `a` 应该排在 `b` 之前。
+  - 等于 0：表示 `a` 和 `b` 相等。
+  - 大于 0：表示 `a` 应该排在 `b` 之后。
+
+### 示例代码
+以下是一个使用 `qsort` 函数对整数数组进行排序的示例代码：
+
+```c
+#include <stdio.h>
+#include <stdlib.h>
+
+// 比较函数，用于比较两个整数
+int compare(const void *a, const void *b) {
+    return (*(int *)a - *(int *)b);
+}
+
+int main() {
+    int arr[] = {5, 2, 9, 1, 5, 6};
+    int n = sizeof(arr) / sizeof(arr[0]);
+
+    // 使用 qsort 函数对数组进行排序
+    qsort(arr, n, sizeof(int), compare);
+
+    // 打印排序后的数组
+    printf("排序后的数组: ");
+    for (int i = 0; i < n; i++) {
+        printf("%d ", arr[i]);
+    }
+    printf("\n");
+
+    return 0;
+}
+```
+
+### 代码解释
+
+1. **比较函数 `compare`**：
+   ```c
+   int compare(const void *a, const void *b) {
+       return (*(int *)a - *(int *)b);
+   }
+   ```
+   这个函数用于比较两个整数。通过将 `void` 指针转换为 `int` 指针，然后解引用来获取整数值。返回值表示两个整数的相对顺序。
+
+2. **主函数 `main`**：
+   ```c
+   int main() {
+       int arr[] = {5, 2, 9, 1, 5, 6};
+       int n = sizeof(arr) / sizeof(arr[0]);
+   
+       // 使用 qsort 函数对数组进行排序
+       qsort(arr, n, sizeof(int), compare);
+   
+       // 打印排序后的数组
+       printf("排序后的数组: ");
+       for (int i = 0; i < n; i++) {
+           printf("%d ", arr[i]);
+       }
+       printf("\n");
+   
+       return 0;
+   }
+   ```
+   主函数定义了一个整数数组 `arr`，并计算数组的元素个数 `n`。然后调用 `qsort` 函数对数组进行排序，并打印排序后的数组。
+
+### 输出
+运行上述代码，输出将是：
+```
+排序后的数组: 1 2 5 5 6 9
+```
+
+通过这种方法，你可以使用 `qsort` 函数对整数数组进行排序。
