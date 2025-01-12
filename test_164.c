@@ -12,8 +12,11 @@ int find_rotatation(int arr[],int num,int n){
             if(num>arr[front]&&num<arr[middle]){
                 end=middle-1;
             }
-            else{
+            else if(num<arr[front]||num>arr[middle]){
                 front=middle+1;
+            }
+            else{
+                return front;
             }
 
         }
@@ -21,8 +24,11 @@ int find_rotatation(int arr[],int num,int n){
             if(num<arr[end]&&num>arr[middle]){
                 front=middle+1;
             }
-            else{
+            else if(num>arr[end]||num<arr[middle]){
                 end=middle-1;
+            }
+            else{
+                return end;
             }
         }
     }
