@@ -1,4 +1,4 @@
-# sunnywhy算法笔记（142-）
+# sunnywhy算法笔记（152-）
 
 ## 152——使用贪心算法求解区间个数
 
@@ -585,3 +585,161 @@ int minPoints(Interval *intervals, int n) {
    - 避免了不必要的点的添加
 
 因此，选择第一个区间的右端点作为第一个点是这个贪心算法的关键，它保证了算法能够得到最优解。
+
+
+
+## 177——双指针实现归并排序
+
+**==之前几天都没有写总结这就导致一个问题——之前的代码再反过来复习就完全忘记了，不知道当时在写这个代码是遇到了什么问题==**因此以后一定要写一道总结一道
+
+对于本题代码如下：
+
+```c
+#include<stdio.h>
+#include<stdlib.h>
+int* merge(int *p1,int *p2,int m,int n){
+    int *p=(int*)malloc(sizeof(int )*(m+n));
+    int i=0,j=0,k=0;
+    while(i<m&&j<n){
+        if(p1[i]<=p2[j]){
+            p[k]=p1[i];
+            i++;
+            k++;
+        }
+        else{
+            p[k]=p2[j];
+            j++;
+            k++;
+        }
+    }
+    while(i<m){
+        p[k]=p1[i];
+        i++;
+        k++;
+    }
+    while(j<n){
+        p[k]=p2[j];
+        k++;
+        j++;
+    }
+    return p;
+}
+int*  merge_sort(int *p,int left,int right){
+    if (left == right) {
+        int* t=(int*)malloc(sizeof(int));
+        t[0]=p[left];
+        return t;
+    }
+    if(left==right-1){
+        int*t=merge(&p[left],&p[right],1,1);
+        return t;
+    }
+    int mid=(left+right)/2;
+    int *p1=merge_sort(p,left,mid);
+    int *p2=merge_sort(p,mid+1,right);
+    int *t=merge(p1,p2,mid-left+1,right-mid);
+    free(p1);
+    free(p2);
+    return t;
+}
+int main(){
+    int n;
+    scanf("%d",&n);
+    int* p=(int*)malloc(sizeof(int)*n);
+    for(int i=0;i<n;i++){
+        scanf("%d",&p[i]);
+    }
+    p=merge_sort(p,0,n-1);
+    for(int i=0;i<n;i++){
+        if(i>0){
+            printf(" ");
+        }
+        printf("%d",p[i]);
+    }
+    free(p);
+    return 0;
+}
+```
+
+其中关键问题在于
+
+```c
+if (left == right) {
+        int* t=(int*)malloc(sizeof(int));
+        t[0]=p[left];
+        return t;
+    }
+```
+
+此处条件变量设置，我之前直接做的是`return p`即直接返回p数组，比如：
+
+- 在 `merge_sort(p, 2, 2)` 中：
+  - `left = 2`, `right = 2`
+  - 进入 `if (left == right)` 分支，返回了整个数组 `p`，而不是一个包含单个元素的数组。
+
+## 178——双指针实现快速排序
+
+此题代码如下：
+
+```c
+#include<stdio.h>
+#include<stdlib.h>
+void quick_sort_num(int p[],int begin,int end){
+    if(begin>=end){
+        return;
+    }
+    int mid=(begin+end)>>1;
+    int temp=p[begin];
+    p[begin]=p[mid];
+    p[mid]=temp;
+    int mark=p[begin];
+    int i=begin;
+    int j=end;
+    while(i<j){
+        while(i < j && p[j] >= mark) j--;
+        p[i] = p[j];
+        while(i < j && p[i] <= mark) i++;
+        p[j] = p[i];
+    }
+    p[i]=mark;
+    //return p;
+    quick_sort_num(p,begin,i-1);
+    quick_sort_num(p,i+1,end);
+}
+int main(){
+    int n;
+    scanf("%d",&n);
+    int *a=(int*)malloc(sizeof(int)*n);
+    for(int i=0;i<n;i++){
+        scanf("%d",&a[i]);
+    }
+    quick_sort_num(a,0,n-1);
+    for(int i=0;i<n;i++){
+        if(i>0){
+            printf(" ");
+        }
+        printf("%d",a[i]);
+    }
+    free(a);
+    return 0;
+}
+```
+
+对于此题我犯了一个很大的错误，一开始我将begin作为枢纽来进行比较，然而发生了超时，我找了很长时间都没有刚发现问题在哪，直到人工智能提醒了我，主要发生在如下片段：
+
+```c
+while(i<j){
+        while(i < j && p[j] >= mark) j--;
+        p[i] = p[j];
+        while(i < j && p[i] <= mark) i++;
+        p[j] = p[i];
+    }
+    p[i]=mark;
+    //return p;
+    quick_sort_num(p,begin,i-1);
+    quick_sort_num(p,i+1,end);
+```
+
+我原来使用的是>而非>=这就导致会进行很多重复运算从而造成超时
+
+## 
