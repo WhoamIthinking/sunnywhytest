@@ -856,3 +856,129 @@ for (int i = 0; i < n; i++) {
 
 通过这种方法，我们可以高效地计算序列中的012对。前缀和思想使得我们能够在一次遍历中完成计算，而不需要进行多次嵌套遍历，从而提高了算法的效率。如果有任何问题，请随时提问。
 
+## 189——使用最小堆查找第k小的元素
+
+对于本题我一开始时使用遍历查找最小值，每找到一个最小值就把这个变为99999，只要找k次就可以，但是这样做会超时，因此需要降低时间复杂度，故而需要使用堆来降低，
+
+```c
+#include <stdio.h>
+#include <stdlib.h>
+
+typedef struct HEAP {
+    int *data;
+    int size;
+} heap;
+
+heap* heap_create(int n) {
+    heap *h = (heap*)malloc(sizeof(heap));
+    h->data = (int *)malloc(sizeof(int) * (n + 1));
+    h->size = 0;
+    return h;
+}
+
+void heap_sift_up(heap *h, int idx) {
+    while (idx > 1 && h->data[idx] < h->data[idx / 2]) {
+        int temp = h->data[idx];
+        h->data[idx] = h->data[idx / 2];
+        h->data[idx / 2] = temp;
+        idx /= 2;
+    }
+}
+
+void heap_sift_down(heap *h, int idx) {
+    while (2 * idx <= h->size) {
+        int j = 2 * idx;
+        if (j < h->size && h->data[j] > h->data[j + 1]) {
+            j++;
+        }
+        if (h->data[idx] <= h->data[j]) {
+            break;
+        }
+        int temp = h->data[idx];
+        h->data[idx] = h->data[j];
+        h->data[j] = temp;
+        idx = j;
+    }
+}
+
+void heap_insert(heap *h, int value) {
+    h->data[++h->size] = value;
+    heap_sift_up(h, h->size);
+}
+
+int heap_delete_min(heap *h) {
+    int min_value = h->data[1];
+    h->data[1] = h->data[h->size--];
+    heap_sift_down(h, 1);
+    return min_value;
+}
+
+int main() {
+    int n, k;
+    scanf("%d %d", &n, &k);
+    int *a = (int *)malloc(sizeof(int) * n);
+    for (int i = 0; i < n; i++) {
+        scanf("%d", &a[i]);
+    }
+
+    heap *h = heap_create(n);
+    for (int i = 0; i < n; i++) {
+        heap_insert(h, a[i]);
+    }
+
+    for (int i = 0; i < k - 1; i++) {
+        heap_delete_min(h);
+    }
+
+    int p = heap_delete_min(h);
+    printf("%d\n", p);
+
+    free(a);
+    free(h->data);
+    free(h);
+    return 0;
+}
+```
+
+如上需要注意实际运用与王道书理论中的差别，实际运用应当使用上过滤与下过滤而不应当是直接使用对调整算法，原因如下：
+
+### 详细解释上滤（sift-up）和下滤（sift-down）操作与你的调整操作（`heap_modify`）的区别，并通过具体的例子说明。
+
+### 上滤（sift-up）操作
+
+上滤操作用于在插入元素后维护堆的性质。它的基本思想是将新插入的元素与其父节点比较，如果新元素小于父节点，则交换它们的位置，直到堆的性质得到满足。
+
+### 下滤（sift-down）操作
+
+下滤操作用于在删除元素后维护堆的性质。它的基本思想是将堆顶元素与其子节点比较，如果堆顶元素大于子节点，则交换它们的位置，直到堆的性质得到满足。
+
+### 你的调整操作（heap_modify）
+
+你的调整操作在每次插入和删除后都重新调整整个堆。这种方法的时间复杂度为 O(n)，因为它需要遍历整个堆。
+
+### 具体例子说明
+
+假设我们有一个初始堆 `[0, 1, 3, 5, 7, 9, 2, 6]`，其中第一个元素 `0` 是占位符，不参与堆的操作。
+
+#### 插入操作
+
+假设我们要插入元素 `4`。
+
+1. **上滤操作**：
+   - 插入 `4` 到堆的末尾，堆变为 `[0, 1, 3, 5, 7, 9, 2, 6, 4]`。
+   - 比较 `4` 和其父节点 `5`，因为 `4 < 5`，交换它们的位置，堆变为 `[0, 1, 3, 4, 7, 9, 2, 6, 5]`。
+   - 比较 `4` 和其父节点 `3`，因为 `4 >= 3`，停止上滤操作。
+2. **你的调整操作**：
+   - 重新调整整个堆，从中间节点开始，逐个比较并交换，直到堆的性质得到满足。
+
+#### 删除操作
+
+假设我们要删除堆顶元素 `1`。
+
+1. **下滤操作**：
+   - 将堆顶元素 `1` 与堆的最后一个元素 `5` 交换，堆变为 `[0, 5, 3, 4, 7, 9, 2, 6]`。
+   - 比较 `5` 和其子节点 `3` 和 `4`，选择较小的 `3`，因为 `5 > 3`，交换它们的位置，堆变为 `[0, 3, 5, 4, 7, 9, 2, 6]`。
+   - 比较 `5` 和其子节点 `2` 和 `6`，选择较小的 `2`，因为 `5 > 2`，交换它们的位置，堆变为 `[0, 3, 2, 4, 7, 9, 5, 6]`。
+   - 比较 `5` 和其子节点 `6`，因为 `5 <= 6`，停止下滤操作。
+2. **你的调整操作**：
+   - 重新调整整个堆，从中间节点开始，逐个比较并交换，直到堆的性质得到满足。
