@@ -12,9 +12,9 @@ int visited[MAXN][MAXN];
 int steps[MAXN][MAXN];
 int n, m;
 int x1;
-int y1;
+int y1_pos;
 int x2;
-int y2;
+int y2_pos;
 int directions[4][2] = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
 
 int is_valid(int x, int y) {
@@ -44,11 +44,11 @@ void bfs(int start_x, int start_y) {
             }
             if(maze[current.x][current.y]==2){
                 int x,y;
-                if(current.x==x1&&current.y==y1){
-                    x=x2;y=y2;
+                if(current.x==x1&&current.y==y1_pos){
+                    x=x2;y=y2_pos;
                 }
                 else{
-                    x=x1;y=y1;
+                    x=x1;y=y1_pos;
                 }
                 if(!visited[x][y]){
                     queue[rear++]=(Point){x,y};
@@ -68,11 +68,11 @@ int main() {
         for (int j = 0; j < m; j++) {
             scanf("%d", &maze[i][j]);
             if(flag==1&&maze[i][j]==2){
-                x1=i;y1=j;
+                x1=i;y1_pos=j;
                 flag++;
             }
             else if(flag==2&&maze[i][j]==2){
-                x2=i;y2=j;
+                x2=i;y2_pos=j;
             }
         }
     }
