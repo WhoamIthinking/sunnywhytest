@@ -4,12 +4,12 @@
 int pre[60];
 int middle[60];
 int post[60];
-int postindex=0; 
-void postorder(int prestart,int preend,int mstart,int mend){
-    if(prestart>preend){
+int preindex=0; 
+void postorder(int poststart,int postend,int mstart,int mend){
+    if(poststart>postend){
         return;
     }
-    int root=pre[prestart];
+    int root=post[postend];
     int rootindex;
     for(int i=mstart;i<=mend;i++){
         if(middle[i]==root){
@@ -17,16 +17,18 @@ void postorder(int prestart,int preend,int mstart,int mend){
             break;
         }
     }
-    postorder(prestart+1,prestart+rootindex-mstart,mstart,rootindex-1);
-    postorder(prestart+rootindex-mstart+1,preend,rootindex+1,mend);
-    post[postindex++]=root;
+    pre[preindex]=root;
+    preindex++;
+    postorder(poststart,poststart+rootindex-mstart-1,mstart,rootindex-1);
+    postorder(poststart+rootindex-mstart,postend-1,rootindex+1,mend);
+   
 }
 
 int main(){
     int n;
     scanf("%d",&n);
     for(int i=0;i<n;i++){
-        scanf("%d",&pre[i]);
+        scanf("%d",&post[i]);
     }
     for(int i=0;i<n;i++){
         scanf("%d",&middle[i]);
@@ -36,7 +38,7 @@ int main(){
         if(i>0){
             printf(" ");
         }
-        printf("%d",post[i]);
+        printf("%d",pre[i]);
     }
     return 0;
 }
