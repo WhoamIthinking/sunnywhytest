@@ -982,3 +982,207 @@ int main() {
    - 比较 `5` 和其子节点 `6`，因为 `5 <= 6`，停止下滤操作。
 2. **你的调整操作**：
    - 重新调整整个堆，从中间节点开始，逐个比较并交换，直到堆的性质得到满足。
+
+
+
+## 338——确定树中两个节点的最近公共祖先
+
+解法如下：
+
+```c
+#include <stdio.h>
+#include <stdlib.h>
+
+// 定义二叉树结点结构体
+typedef struct TreeNode {
+    int val;
+    struct TreeNode *left;
+    struct TreeNode *right;
+} TreeNode;
+
+/*
+ * createTree 函数：
+ *   按照先序遍历的顺序创建二叉树，输入中-1表示空结点。
+ *   例如输入：3 5 6 -1 -1 2 7 -1 -1 4 -1 -1 表示如下二叉树：
+ *
+ *           3
+ *          / \
+ *         5   2
+ *        / \  / \
+ *       6  7 4 ...
+ *
+ *   注意：输入格式由用户决定，必须保证输入正确。
+ */
+TreeNode* createTree() {
+    int val;
+    if (scanf("%d", &val) != 1) {
+        return NULL;
+    }
+    if (val == -1) {
+        return NULL;
+    }
+    TreeNode *node = (TreeNode*)malloc(sizeof(TreeNode));
+    node->val = val;
+    node->left = createTree();
+    node->right = createTree();
+    return node;
+}
+
+/*
+ * lowestCommonAncestor 函数：
+ *   递归查找二叉树中两个节点的最近公共祖先。
+ *   算法思想：
+ *     1. 如果当前结点为空，返回 NULL；
+ *     2. 如果当前结点等于 p 或 q，则返回当前结点；
+ *     3. 递归在左子树和右子树查找；
+ *     4. 如果左右子树都返回非 NULL，则当前结点即为 LCA；
+ *     5. 否则返回不为 NULL 的那一边。
+ */
+TreeNode* lowestCommonAncestor(TreeNode* root, int p, int q) {
+    if (root == NULL) {
+        return NULL;
+    }
+    if (root->val == p || root->val == q) {
+        return root;
+    }
+    TreeNode *left = lowestCommonAncestor(root->left, p, q);
+    TreeNode *right = lowestCommonAncestor(root->right, p, q);
+    if (left != NULL && right != NULL) {
+        return root;
+    }
+    return (left != NULL) ? left : right;
+}
+
+/*
+ * freeTree 函数：
+ *   释放二叉树占用的内存。
+ */
+void freeTree(TreeNode* root) {
+    if (root == NULL) {
+        return;
+    }
+    freeTree(root->left);
+    freeTree(root->right);
+    free(root);
+}
+
+int main() {
+    /*
+     * 输入说明：
+     *   1. 首先按先序遍历顺序输入二叉树数据，其中 -1 表示空结点
+     *   2. 输入完树的所有结点后，再输入两个整数，分别表示需要查找最近公共祖先的两个节点的值
+     *
+     * 例如输入：
+     *   3 5 6 -1 -1 2 7 -1 -1 4 -1 -1
+     *   5 4
+     *
+     * 表示构造的树为：
+     *
+     *         3
+     *        / \
+     *       5   2
+     *      / \
+     *     6   7
+     *          \
+     *           4
+     *
+     * 查找节点 5 和节点 4 的最近公共祖先。
+     */
+    TreeNode* root = createTree();
+    int p, q;
+    scanf("%d %d", &p, &q);
+    TreeNode* ancestor = lowestCommonAncestor(root, p, q);
+    if (ancestor != NULL) {
+        printf("Lowest Common Ancestor: %d\n", ancestor->val);
+    } else {
+        printf("Lowest Common Ancestor not found.\n");
+    }
+    freeTree(root);
+    return 0;
+}
+```
+
+下面我们用一个具体例子来解释 lowestCommonAncestor 函数的工作原理。假设有如下二叉树（数字表示结点的值）：
+
+```
+        3
+       / \
+      5   2
+     / \
+    6   7
+         \
+          4
+```
+
+假设我们要求 5 和 4 的最近公共祖先。下面逐步说明函数如何找到答案：
+
+1. 从根结点开始调用  
+   调用 lowestCommonAncestor(root=3, p=5, q=4)  
+   - 检查：3 不是目标值 5 也不是 4，所以不直接返回。
+   - 递归进入左子树和右子树分别查找。
+
+2. 查找左子树  
+   调用 lowestCommonAncestor(root=5, p=5, q=4)  
+   - 检查：当前结点 5 正好等于目标 p（5）；此时函数会返回结点 5。  
+   - 这样，左子树返回的结果就是结点 5。
+
+3. 查找右子树  
+   调用 lowestCommonAncestor(root=2, p=5, q=4)  
+   - 检查：2 既不等于 5 也不等于 4。
+   - 对节点 2 的左子树和右子树递归查找，但假设节点 2 没有目标结点（或其子树中都找不到 5 或 4），最终会返回 NULL。  
+   - 右子树返回的结果为 NULL。
+
+4. 返回结果  
+   回到第一次调用（根为 3）：  
+   - 左侧返回结点 5，右侧返回 NULL。  
+   - 按照算法，如果只有一侧返回非 NULL，则表示“目标结点都在这一侧”，因此最终返回左侧结果，即结点 5。
+
+这样，我们得到结论：5 是 5 和 4 的最近公共祖先。
+
+---
+
+### 代码逻辑解释
+
+函数 lowestCommonAncestor 的代码逻辑如下：
+
+- **终止条件：**
+
+  ```c
+  if(root == NULL) return NULL;
+  if(root->val == p || root->val == q) return root;
+  ```
+  
+  当到达空结点时返回 NULL；如果当前结点就是目标之一（p 或 q），直接返回当前结点。
+
+- **递归调用：**
+
+  ```c
+  TreeNode* left = lowestCommonAncestor(root->left, p, q);
+  TreeNode* right = lowestCommonAncestor(root->right, p, q);
+  ```
+
+  分别在左右子树中查找两个目标结点。如果在左子树找到了一个目标结点（或者它的最近公共祖先），left 保存该结点；同理右子树返回的结果保存在 right 中。
+
+- **后续判断：**
+
+  ```c
+  if (left != NULL && right != NULL)
+      return root;
+  return (left != NULL) ? left : right;
+  ```
+
+  - 如果 left 和 right 都不为空，表示 p 和 q 分别位于左右两侧，因此当前结点 root 就是它们的最近公共祖先。
+  - 如果只有一侧（left 或 right）不为空，则说明 p 和 q 都在同一侧，返回不为 NULL 的那一侧。
+
+---
+
+### 示例回顾
+
+在我们的例子中：
+
+- 在根（3）的左子树中，递归返回了结点 5（因为遇到了 p=5）。
+- 在根（3）的右子树中，没有找到任何目标结点，所以返回 NULL。
+- 最后在根（3）处判断：只有一侧有返回值（结点 5），因此最终结果返回结点 5。
+
+这种递归方法能正确捕捉到两个目标结点出现的位置，通过逐层返回来确定最近公共祖先的位置。希望这个详细的解释能够帮助你理解该函数的工作原理。
+
