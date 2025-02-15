@@ -9,16 +9,16 @@ typedef struct treenode{
 
 int totalsum=0;
 
-void calnum(treenode* root,int nowsum){
+void calnum(treenode* root,int nowroute){
     if(root==NULL){
         return;
     }
-    nowsum+=root->data;
+    nowroute++;
     if(root->left==NULL&&root->right==NULL){
-        totalsum+=nowsum;
+        totalsum=totalsum+(nowroute-1)*root->data;
     }
-    calnum(root->left,nowsum);
-    calnum(root->right,nowsum);
+    calnum(root->left,nowroute);
+    calnum(root->right,nowroute);
 }
 
 int main(){
