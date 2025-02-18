@@ -15,9 +15,9 @@ void calnum(TreeNode* root, int nowsum) {
     if (root == NULL) {
         return;
     }
-    nowsum += root->data;
+    nowsum ++;
     if (root->firstChild == NULL) {
-        totalsum += nowsum;
+        totalsum =totalsum+(nowsum-1)*root->data;
     }
     calnum(root->firstChild, nowsum);
     TreeNode *t=root->firstChild;

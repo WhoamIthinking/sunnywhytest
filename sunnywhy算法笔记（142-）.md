@@ -1186,3 +1186,91 @@ int main() {
 
 这种递归方法能正确捕捉到两个目标结点出现的位置，通过逐层返回来确定最近公共祖先的位置。希望这个详细的解释能够帮助你理解该函数的工作原理。
 
+
+
+
+
+## 350——求一般树的路径之和
+
+本题主要要注意一般树的数据结构，只要掌握这个，算法实际比较简单：
+
+```c
+#include <stdio.h>
+#include <stdlib.h>
+
+// 定义树节点结构体
+typedef struct TreeNode {
+    int data;
+    struct TreeNode* firstChild;
+    struct TreeNode* nextSibling;
+} TreeNode;
+
+int totalsum = 0;
+
+// 递归计算路径和
+void calnum(TreeNode* root, int nowsum) {
+    if (root == NULL) {
+        return;
+    }
+    nowsum += root->data;
+    if (root->firstChild == NULL) {
+        totalsum += nowsum;
+    }
+    calnum(root->firstChild, nowsum);
+    TreeNode *t=root->firstChild;
+    while(t!=NULL){
+        calnum(t->nextSibling, nowsum);
+        t=t->nextSibling;
+    }
+}
+
+int main() {
+    int n;
+    scanf("%d", &n);
+    TreeNode* tree = (TreeNode*)malloc(sizeof(TreeNode) * n);
+    for (int i = 0; i < n; i++) {
+        scanf("%d", &tree[i].data);
+        tree[i].firstChild = NULL;
+        tree[i].nextSibling = NULL;
+    }
+    for (int i = 0; i < n; i++) {
+        int k;
+        scanf("%d", &k);
+        TreeNode* prevChild = NULL;
+        for (int j = 0; j < k; j++) {
+            int child;
+            scanf("%d", &child);
+            if (prevChild == NULL) {
+                tree[i].firstChild = &tree[child];
+            } else {
+                prevChild->nextSibling = &tree[child];
+            }
+            prevChild = &tree[child];
+        }
+    }
+    calnum(&tree[0], 0);
+    printf("%d\n", totalsum);
+    free(tree);
+    return 0;
+}
+```
+
+### 代码解释
+
+1. **结构体定义与全局变量**：
+   - `TreeNode` 结构体定义了树的节点，包含节点的权值 `data`、第一个子节点指针 `firstChild` 和下一个兄弟节点指针 `nextSibling`。
+   - 全局变量 `totalsum` 用于存储所有叶节点路径和的总和。
+2. **递归计算路径和**：
+   - `calnum` 函数递归计算从根节点到每个叶节点的路径和，并累加所有叶节点的路径和。
+   - 如果当前节点为空，返回。
+   - 如果当前节点是叶节点（没有子节点），累加路径和到 `totalsum`。
+   - 否则，递归计算第一个子节点和下一个兄弟节点的路径和。
+3. **主函数**：
+   - 读取节点数量 `n`。
+   - 依次读入每个节点的权值，并初始化每个节点的子节点指针和兄弟节点指针为 NULL。
+   - 依次读入每个节点的子节点信息，构建树结构。
+   - 从根节点（编号0）开始调用 `calnum` 函数计算树的路径和，并输出结果。
+   - 释放动态分配的内存。
+
+这样，通过递归遍历树，我们可以计算出所有叶节点的路径和之和。希望这个代码和解释能够帮助你理解如何实现这一功能。
+
